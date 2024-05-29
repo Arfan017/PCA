@@ -25,7 +25,7 @@ from keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense, Activati
 # Muat dataset Anda
 # Tentukan direktori dataset Anda
 num_classes = 2
-dataset_dir = "D:/Arfan/project/DeepLearning/PCA/Dataset"
+dataset_dir = "F:/DeepLearning/PCA/Dataset"
 
 # Inisialisasi daftar gambar sebagai daftar kosong
 moi_images = []
@@ -106,13 +106,9 @@ print(plt.title('(Label: {})'.format(curr_label)))
 
 np.min(x_train), np.max(x_train)
 
-# Normalisasi data
-# x_train = x_train / 255.0
-# x_test = x_test / 255.0
-
 x_train_normalized = x_train/np.max(x_train)
 
-np.min(x_train_normalized),np.max(x_train_normalized)
+np.min(x_train_normalized), np.max(x_train_normalized)
 
 x_train_normalized.shape
 
@@ -123,10 +119,6 @@ print(n_cols)
 
 x_train_flat = x_train_normalized.reshape(-1, n_cols)
 x_train_flat.shape
-
-# Ratakan data
-# x_train_flat = x_train.reshape(-1, 3072)
-# x_test_flat = x_test.reshape(-1, 3072)
 
 feat_cols = ['pixel{}'.format(str(i)) for i in range(x_train_flat.shape[1])]
 
@@ -144,14 +136,6 @@ from sklearn.decomposition import PCA
 pca_cifar = PCA(n_components=3)
 principalComponents_cifar = pca_cifar.fit_transform(df_cifar.iloc[:,:-1])
 
-# # Terapkan PCA
-# from sklearn.decomposition import PCA
-
-# # Inisialisasi PCA dengan 90% varians yang dijelaskan
-# pca = PCA(0.9)
-
-# # Pasang PCA ke data pelatihan yang diratakan
-# pca.fit(x_train_flat)
 
 principal_cifar_Df = pd.DataFrame(data = principalComponents_cifar
              , columns = ['principal component 1', 'principal component 2', 'principal component 3'])
@@ -193,7 +177,6 @@ pca.fit(x_train_flat)
 
 pca.n_components_
 
-# Transformasikan data pelatihan dan pengujian yang diratakan menggunakan PCA
 train_img_pca = pca.transform(x_train_flat)
 test_img_pca = pca.transform(x_test_flat)
 
@@ -211,7 +194,6 @@ epochs = 20
 
 model = Sequential()
 model.add(Input(shape=(num_components,)))
-# model.add(Dense(1024, activation='relu', input_shape=(num_components,)))
 model.add(Dense(1024, activation='relu'))
 model.add(Dense(512, activation='relu'))
 model.add(Dense(256, activation='relu'))
@@ -226,29 +208,26 @@ model.compile(loss='categorical_crossentropy',
 history = model.fit(train_img_pca, y_train, batch_size = batch_size ,epochs = epochs, verbose=1,
                     validation_data=(test_img_pca, y_test))
 
-# Evaluasi model
 model.evaluate(test_img_pca, y_test)
-
-# Visualisasikan hasil training
 
 plt.plot(history.history['accuracy'], label='acc', color='red')
 plt.plot(history.history['val_accuracy'], label='val_acc', color='green')
 plt.legend()
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 from sklearn.metrics import ConfusionMatrixDisplay
 
-# Prediksi label kelas tunggal dari probabilitas yang diprediksi oleh model
 y_pred = model.predict(test_img_pca).argmax(axis=1)
 
-# Buat confusion matrix
 conf_matrix = confusion_matrix(np.argmax(y_test, axis=1), y_pred)
 display = ConfusionMatrixDisplay(confusion_matrix = conf_matrix, display_labels = ['moi', 'non_moi'])
 
-# Visualisasikan confusion matrix
 display.plot()
 plt.show()
+
+report = classification_report(np.argmax(y_test, axis=1), y_pred, target_names=['moi', 'non_moi'])
+print(report)
 
 # # Muat dan proses gambar baru
 # new_image = Image.open("/content/drive/MyDrive/Dataset/rajaampat/rajaampat (97).jpg")  # Ganti dengan kode untuk memuat dan memproses gambar baru
@@ -289,15 +268,19 @@ def predict_image(image_path):
 
     # Konversi gambar baru menjadi array NumPy
     new_image = np.array(new_image)
+    print( "Image Array: ",new_image)
 
     # Ratakan gambar baru
     new_image_flat = new_image.reshape(1, -1)
+    print( "Image Falt: ",new_image)
 
     # Terapkan PCA
     new_image_pca = pca.transform(new_image_flat)
-
+    print( "Image PCA: ",new_image)
+    
     # Prediksi label kelas
     prediction = model.predict(new_image_pca)
+    print( "Image Predict: ",new_image)
 
     labels = '''moi non_moi'''.split()
 

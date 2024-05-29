@@ -1,0 +1,8 @@
+numpy
+PIL
+matplotlib
+keras
+efficientnet
+sklearn
+pandas
+seaborn
